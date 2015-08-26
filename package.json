@@ -1,0 +1,26 @@
+{
+  "name": "pure-component",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Create React components that favor pure render functions and immutable props.",
+  "main": "lib",
+  "scripts": {
+    "test": "eslint lib/*.js && tape tests/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RealGeeks/pure-component.git"
+  },
+  "author": "Sorin Iclanzan",
+  "license": "UNLICENSED",
+  "homepage": "https://github.com/RealGeeks/pure-component#readme",
+  "devDependencies": {
+    "eslint": "^1.2.1",
+    "tape": "^4.2.0"
+  },
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "react": "^0.14.0-beta3",
+    "react-pure-render": "^1.0.2"
+  }
+}
