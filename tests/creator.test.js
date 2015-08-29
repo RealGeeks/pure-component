@@ -13,7 +13,7 @@ var keysToOmit = [
 ];
 
 test('Componet Creator', function (assert) {
-  assert.plan(16);
+  assert.plan(17);
 
   var FakeComponent = function () {};
   var component;
@@ -26,33 +26,10 @@ test('Componet Creator', function (assert) {
     isValidElement: constant(false),
     createElement: function (Type) {
       assert.equal(
-        Type.prototype.low,
-        'level',
-        'merges specs into component'
+        Type,
+        component.type,
+        'calls createElement with correct type'
       );
-
-      assert.equal(
-        Type.prototype.foo,
-        'bar',
-        'merges in React.Component prototype.'
-      );
-
-      assert.equal(
-        typeof Type.prototype.shouldComponentUpdate,
-        'function',
-        'merges in pure render mixin.'
-      );
-
-      assert.ok(
-        keysToOmit.every(function (key) {
-          return !Type.prototype.hasOwnProperty(key);
-        }),
-        'does not add ' + keysToOmit.join() + ' to prototype.'
-      );
-
-      assert.equal(Type.contextTypes, 'a', 'adds contextTypes to constructor');
-      assert.equal(Type.defaultProps, 'b', 'adds defaultProps to constructor');
-      assert.equal(Type.displayName, 'c', 'adds displayName to constructor');
     }
   })({
     low: 'level',
@@ -67,33 +44,66 @@ test('Componet Creator', function (assert) {
 
   component(5);
 
+  assert.equal(
+    component.type.prototype.low,
+    'level',
+    'merges specs into component'
+  );
+
+  assert.equal(
+    component.type.prototype.foo,
+    'bar',
+    'merges in React.Component prototype.'
+  );
+
+  assert.equal(
+    typeof component.type.prototype.shouldComponentUpdate,
+    'function',
+    'merges in pure render mixin.'
+  );
+
+  assert.ok(
+    keysToOmit.every(function (key) {
+      return !component.type.prototype.hasOwnProperty(key);
+    }),
+    'does not add ' + keysToOmit.join() + ' to prototype.'
+  );
+
+  assert.equal(
+    component.type.contextTypes, 'a', 'adds contextTypes to constructor'
+  );
+  assert.equal(
+    component.type.defaultProps, 'b', 'adds defaultProps to constructor'
+  );
+  assert.equal(
+    component.type.displayName, 'c', 'adds displayName to constructor'
+  );
+
   var render = function () {};
 
   render.displayName = 'Rook';
 
-  creator({
+  component = creator({
     Component: FakeComponent,
-    isValidElement: constant(false),
-    createElement: function (Type) {
-      assert.equal(
-        Type.displayName,
-        'Rook',
-        'uses displayName from render function if available.'
-      );
-    }
-  })(render)();
+    isValidElement: constant(false)
+  })(render);
 
-  creator({
+  assert.equal(
+    component.type.displayName,
+    'Rook',
+    'uses displayName from render function if available.'
+  );
+
+  component = creator({
     Component: FakeComponent,
-    isValidElement: constant(false),
-    createElement: function (Type) {
-      assert.equal(
-        Type.displayName,
-        'Loo',
-        'uses displayName from render function name if available.'
-      );
-    }
-  })(function Loo() {})();
+    isValidElement: constant(false)
+  })(function Loo() {});
+
+  assert.equal(
+    component.type.displayName,
+    'Loo',
+    'uses displayName from render function name if available.'
+  );
 
   creator({
     Component: FakeComponent,
