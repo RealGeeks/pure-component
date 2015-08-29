@@ -1,6 +1,6 @@
 {
   "name": "pure-component",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Create React components that favor pure render functions and immutable props.",
   "main": "lib",
   "scripts": {
