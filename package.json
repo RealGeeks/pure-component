@@ -4,7 +4,7 @@
   "description": "Create React components that favor pure render functions and immutable props.",
   "main": "lib",
   "scripts": {
-    "test": "eslint lib/*.js && tape tests/*.test.js"
+    "test": "eslint lib/*.js tests/*.js && tape tests/*.test.js"
   },
   "repository": {
     "type": "git",
