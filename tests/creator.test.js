@@ -1,126 +1,43 @@
 'use strict';
 
 var test = require('tape');
-var constant = require('lodash/utility/constant');
+var noop = require('lodash/utility/noop');
 var react = require('react');
 var creator = require('../lib/creator');
 
-var keysToOmit = [
-  'contextTypes',
-  'defaultProps',
-  'displayName',
-  'propTypes'
-];
+var componentFactory = creator(react);
 
-test('Componet Creator', function (assert) {
-  assert.plan(17);
+var factoryWithCreateElement = function (createElement) {
+  return creator({
+    Component: react.Component,
+    isValidElement: react.isValidElement,
+    createElement: createElement || noop
+  });
+};
 
-  var FakeComponent = function () {};
-  var component;
+test('Component Creator', function (t) {
+  t.test('created component calls React.createElement', function (assert) {
+    assert.plan(8);
 
-  FakeComponent.prototype.foo = 'bar';
-  FakeComponent.prototype.state = 0;
-
-  component = creator({
-    Component: FakeComponent,
-    isValidElement: constant(false),
-    createElement: function (Type) {
+    var component = factoryWithCreateElement(function (Type) {
       assert.equal(
         Type,
         component.type,
-        'calls createElement with correct type'
+        'with correct type'
       );
-    }
-  })({
-    low: 'level',
-    contextTypes: 'a',
-    defaultProps: 'b',
-    displayName: 'c',
-    render: function (props, state) {
-      assert.equal(props, 5, 'passes props to render as argument.');
-      assert.equal(state, 0, 'passes state to render as argument.');
-    }
-  });
+    })(noop);
 
-  component(5);
+    component();
 
-  assert.equal(
-    component.type.prototype.low,
-    'level',
-    'merges specs into component'
-  );
-
-  assert.equal(
-    component.type.prototype.foo,
-    'bar',
-    'merges in React.Component prototype.'
-  );
-
-  assert.equal(
-    typeof component.type.prototype.shouldComponentUpdate,
-    'function',
-    'merges in pure render mixin.'
-  );
-
-  assert.ok(
-    keysToOmit.every(function (key) {
-      return !component.type.prototype.hasOwnProperty(key);
-    }),
-    'does not add ' + keysToOmit.join() + ' to prototype.'
-  );
-
-  assert.equal(
-    component.type.contextTypes, 'a', 'adds contextTypes to constructor'
-  );
-  assert.equal(
-    component.type.defaultProps, 'b', 'adds defaultProps to constructor'
-  );
-  assert.equal(
-    component.type.displayName, 'c', 'adds displayName to constructor'
-  );
-
-  var render = function () {};
-
-  render.displayName = 'Rook';
-
-  component = creator({
-    Component: FakeComponent,
-    isValidElement: constant(false)
-  })(render);
-
-  assert.equal(
-    component.type.displayName,
-    'Rook',
-    'uses displayName from render function if available.'
-  );
-
-  component = creator({
-    Component: FakeComponent,
-    isValidElement: constant(false)
-  })(function Loo() {});
-
-  assert.equal(
-    component.type.displayName,
-    'Loo',
-    'uses displayName from render function name if available.'
-  );
-
-  creator({
-    Component: FakeComponent,
-    isValidElement: react.isValidElement,
-    createElement: function (Type, props) {
+    factoryWithCreateElement(function (Type, props) {
       assert.equal(
         props,
         null,
         'creates element with null props if passed undefined.'
       );
-    }
-  })(function () {})();
+    })(noop)();
 
-  creator({
-    Component: FakeComponent,
-    isValidElement: react.isValidElement,
-    createElement: function (Type, props, child) {
+    factoryWithCreateElement(function (Type, props, child) {
       assert.equal(
         props,
         null,
@@ -132,37 +49,25 @@ test('Componet Creator', function (assert) {
         5,
         'creates element with number child.'
       );
-    }
-  })(function () {})(5);
+    })(noop)(5);
 
-  creator({
-    Component: FakeComponent,
-    isValidElement: react.isValidElement,
-    createElement: function (Type, props, child) {
+    factoryWithCreateElement(function (Type, props, child) {
       assert.equal(
         child,
         'asd',
         'creates element with string child.'
       );
-    }
-  })(function () {})('asd');
+    })(noop)('asd');
 
-  creator({
-    Component: FakeComponent,
-    isValidElement: react.isValidElement,
-    createElement: function (Type, props, c1, c2) {
+    factoryWithCreateElement(function (Type, props, c1, c2) {
       assert.equal(
         c2,
         'pls',
         'creates element with multiple children.'
       );
-    }
-  })(function () {})('asd', 'pls');
+    })(noop)('asd', 'pls');
 
-  creator({
-    Component: FakeComponent,
-    isValidElement: react.isValidElement,
-    createElement: function (Type, props, child) {
+    factoryWithCreateElement(function (Type, props, child) {
       assert.deepEqual(
         props,
         {c: 4},
@@ -174,6 +79,107 @@ test('Componet Creator', function (assert) {
         'asd',
         'passes props and children.'
       );
-    }
-  })(function () {})({c: 4}, 'asd');
+    })(noop)({c: 4}, 'asd');
+  });
+
+  t.test('render method receives props and state', function (assert) {
+    assert.plan(2);
+
+    var component = componentFactory(function (props, state) {
+      assert.equal(props, 5, 'passes props to render as argument.');
+      assert.equal(state, 0, 'passes state to render as argument.');
+    });
+
+    component.type.prototype.render.call({
+      props: 5,
+      state: 0
+    });
+  });
+
+  t.test('created component has correct structure', function (assert) {
+    assert.plan(10);
+
+    var component = componentFactory({
+      low: 'level',
+      contextTypes: 'a',
+      defaultProps: 'b',
+      displayName: 'c',
+      render: noop
+    });
+
+    assert.equal(
+      component.type.prototype.low,
+      'level',
+      'merges specs into component'
+    );
+
+    assert.equal(
+      typeof component.type.prototype.setState,
+      'function',
+      'merges in React.Component prototype.'
+    );
+
+    assert.equal(
+      typeof component.type.prototype.shouldComponentUpdate,
+      'function',
+      'merges in pure render mixin.'
+    );
+
+    assert.ok(
+      !component.type.prototype.hasOwnProperty('contextTypes'),
+      'does not add contextTypes to prototype'
+    );
+
+    assert.ok(
+      !component.type.prototype.hasOwnProperty('defaultProps'),
+      'does not add defaultProps to prototype'
+    );
+
+    assert.ok(
+      !component.type.prototype.hasOwnProperty('displayName'),
+      'does not add displayName to prototype'
+    );
+
+    assert.ok(
+      !component.type.prototype.hasOwnProperty('propTypes'),
+      'does not add propTypes to prototype'
+    );
+
+    assert.equal(
+      component.type.contextTypes,
+      'a',
+      'adds contextTypes to constructor'
+    );
+
+    assert.equal(
+      component.type.defaultProps,
+      'b',
+      'adds defaultProps to constructor'
+    );
+
+    assert.equal(
+      component.type.displayName,
+      'c',
+      'adds displayName to constructor'
+    );
+  });
+
+  t.test('resolves component display name', function (assert) {
+    assert.plan(2);
+
+    var render = function () {};
+    render.displayName = 'Rook';
+
+    assert.equal(
+      componentFactory(render).type.displayName,
+      'Rook',
+      'uses displayName from render function if available.'
+    );
+
+    assert.equal(
+      componentFactory(function Loo() {}).type.displayName,
+      'Loo',
+      'uses displayName from render function name if available.'
+    );
+  });
 });
