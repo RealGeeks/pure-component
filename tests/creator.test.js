@@ -5,14 +5,15 @@ var noop = require('lodash/utility/noop');
 var react = require('react');
 var creator = require('../lib/creator');
 
-var componentFactory = creator(react);
+var shouldComponentUpdate = function () {};
+var componentFactory = creator(react, shouldComponentUpdate);
 
 var factoryWithCreateElement = function (createElement) {
   return creator({
     Component: react.Component,
     isValidElement: react.isValidElement,
     createElement: createElement || noop
-  });
+  }, shouldComponentUpdate);
 };
 
 test('Component Creator', function (t) {
@@ -120,9 +121,9 @@ test('Component Creator', function (t) {
     );
 
     assert.equal(
-      typeof component.type.prototype.shouldComponentUpdate,
-      'function',
-      'merges in pure render mixin.'
+      component.type.prototype.shouldComponentUpdate,
+      shouldComponentUpdate,
+      'adds passed in shouldComponentUpdate to prototype.'
     );
 
     assert.ok(
