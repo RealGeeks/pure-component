@@ -41,7 +41,7 @@ var myAppSpec = {
   childContextTypes: {
     greeting: React.PropTypes.string
   },
-  getChildContext: function() {
+  getChildContext: function () {
     return {greeting: 'Hello'};
   },
   render: function (props) {
