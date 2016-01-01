@@ -98,7 +98,7 @@ test('Component Creator', function (t) {
   });
 
   t.test('created component has correct structure', function (assert) {
-    assert.plan(10);
+    assert.plan(9);
 
     var component = componentFactory({
       low: 'level',
@@ -118,12 +118,6 @@ test('Component Creator', function (t) {
       typeof component.type.prototype.setState,
       'function',
       'merges in React.Component prototype.'
-    );
-
-    assert.equal(
-      component.type.prototype.shouldComponentUpdate,
-      shouldComponentUpdate,
-      'adds passed in shouldComponentUpdate to prototype.'
     );
 
     assert.ok(
@@ -162,6 +156,28 @@ test('Component Creator', function (t) {
       component.type.displayName,
       'c',
       'adds displayName to constructor'
+    );
+  });
+
+  t.test('shouldComponentUpdate', function (assert) {
+    assert.plan(2);
+
+    var fn = function () {};
+
+    assert.equal(
+      componentFactory(noop).type.prototype.shouldComponentUpdate,
+      shouldComponentUpdate,
+      'adds shouldComponentUpdate to prototype.'
+    );
+
+
+    assert.equal(
+      componentFactory({
+        shouldComponentUpdate: fn,
+        render: noop
+      }).type.prototype.shouldComponentUpdate,
+      fn,
+      'shouldComponentUpdate from spec is used if provided.'
     );
   });
 
