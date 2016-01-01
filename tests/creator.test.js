@@ -98,10 +98,11 @@ test('Component Creator', function (t) {
   });
 
   t.test('created component has correct structure', function (assert) {
-    assert.plan(13);
+    assert.plan(15);
 
     var component = componentFactory({
       low: 'level',
+      childContextTypes: 'z',
       contextTypes: 'a',
       defaultProps: 'b',
       displayName: 'c',
@@ -118,6 +119,11 @@ test('Component Creator', function (t) {
       typeof component.type.prototype.setState,
       'function',
       'merges in React.Component prototype.'
+    );
+
+    assert.ok(
+      !component.type.prototype.hasOwnProperty('childContextTypes'),
+      'does not add childContextTypes to prototype'
     );
 
     assert.ok(
@@ -138,6 +144,12 @@ test('Component Creator', function (t) {
     assert.ok(
       !component.type.prototype.hasOwnProperty('propTypes'),
       'does not add propTypes to prototype'
+    );
+
+    assert.equal(
+      component.type.childContextTypes,
+      'z',
+      'adds childContextTypes to constructor'
     );
 
     assert.equal(
