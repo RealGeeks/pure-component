@@ -83,17 +83,17 @@ test('Component Creator', function (t) {
     })(noop)({c: 4}, 'asd');
   });
 
-  t.test('render method receives props and state', function (assert) {
+  t.test('render method receives props and context', function (assert) {
     assert.plan(2);
 
-    var component = componentFactory(function (props, state) {
+    var component = componentFactory(function (props, context) {
       assert.equal(props, 5, 'passes props to render as argument.');
-      assert.equal(state, 0, 'passes state to render as argument.');
+      assert.equal(context, 0, 'passes context to render as argument.');
     });
 
     component.type.prototype.render.call({
       props: 5,
-      state: 0
+      context: 0
     });
   });
 
