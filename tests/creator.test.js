@@ -98,7 +98,7 @@ test('Component Creator', function (t) {
   });
 
   t.test('created component has correct structure', function (assert) {
-    assert.plan(9);
+    assert.plan(13);
 
     var component = componentFactory({
       low: 'level',
@@ -156,6 +156,37 @@ test('Component Creator', function (t) {
       component.type.displayName,
       'c',
       'adds displayName to constructor'
+    );
+
+    var render = function Foo() {};
+    render.contextTypes = 'Apple';
+    render.defaultProps = 'Banana';
+    render.displayName = 'Coconut';
+    render.propTypes = 'Date';
+    component = componentFactory(render);
+
+    assert.equal(
+      component.type.contextTypes,
+      'Apple',
+      'adds contextTypes from pure function to constructor'
+    );
+
+    assert.equal(
+      component.type.defaultProps,
+      'Banana',
+      'adds defaultProps from pure function to constructor'
+    );
+
+    assert.equal(
+      component.type.displayName,
+      'Coconut',
+      'adds displayName from pure function to constructor'
+    );
+
+    assert.equal(
+      component.type.propTypes,
+      'Date',
+      'adds propTypes from pure function to constructor'
     );
   });
 
