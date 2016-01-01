@@ -7,35 +7,51 @@ Create React components that favor pure render functions and immutable props.
 Using a pure render function:
 
 ```js
-var React = require('React');
+var React = require('react');
+var ReactDom = require('react-dom');
 var pureComponent = require('pure-component');
 
 var myComponent = pureComponent(function myComponentRender(props) {
   return React.DOM.p(null, props.text);
 });
 
-React.render(myComponent({text: 'Hello'}), document.body);
+ReactDom.render(myComponent({text: 'Hello'}), document.body);
 ```
 
 Using a spec object:
 
 ```js
-var React = require('React');
+var React = require('react');
+var ReactDom = require('react-dom');
 var pureComponent = require('pure-component');
 
-var spec = {
+var myComponentSpec = {
   displayName: 'My Component',
-  componentWillMount: function () {
-    this.state = {greeting: 'Hello'};
+  contextTypes: {
+    greeting: React.PropTypes.string
   },
-  render: function (props, state) {
-    return React.DOM.p(null, state.greeting + ' ' + props.children);
+  render: function (props, context) {
+    return React.DOM.p(null, context.greeting + ' ' + props.children);
   }
 };
 
-var myComponent = pureComponent(spec);
+var myComponent = pureComponent(myComponentSpec);
 
-React.render(myComponent('World'), document.body);
+var myAppSpec = {
+  childContextTypes: {
+    greeting: React.PropTypes.string
+  },
+  getChildContext: function() {
+    return {greeting: 'Hello'};
+  },
+  render: function (props) {
+    return myComponent(props.children);
+  }
+};
+
+var myApp = pureComponent(myAppSpec);
+
+React.render(myApp('World'), document.body);
 ```
 
 ### Spec
@@ -44,7 +60,7 @@ When passing in a spec object all of it’s own properties other than `contextTy
 
 Unless overwritten from spec, components default to using the [pure render](https://github.com/gaearon/react-pure-render) `shouldComponentUpdate`.
 
-The render function receives `props` and `state` as arguments.
+The render function receives `props` and an optional `context` as arguments.
 
 ### Display name
 
